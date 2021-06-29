@@ -1,6 +1,6 @@
 # puzzle_master
 
-An app to solve flutter
+An app to solve rubik's cube.
 
 ## Getting Started
 
