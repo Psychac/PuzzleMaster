@@ -6,27 +6,27 @@ def calibrate():
     url = 'http://127.0.0.1:8000/calibrate'
     #print(os.getcwd())
     #Green
-    payload = {'color': "green",'side':"F"}
+    payload = {'color': "Green",'side':"F"}
     my_img = {'image': open('./Test/rubiks-side-F.jpg', 'rb')}
     r = requests.post(url, files=my_img,data=payload)
     #Yellow
-    payload = {'color': "yellow",'side':"R"}
+    payload = {'color': "Yellow",'side':"R"}
     my_img = {'image': open('./Test/rubiks-side-R.jpg', 'rb')}
     r = requests.post(url, files=my_img,data=payload)
     #Blue
-    payload = {'color': "blue",'side':"B"}
+    payload = {'color': "Blue",'side':"B"}
     my_img = {'image': open('./Test/rubiks-side-B.jpg', 'rb')}
     r = requests.post(url, files=my_img,data=payload)
     #Orange
-    payload = {'color': "orange",'side':"L"}
+    payload = {'color': "Orange",'side':"L"}
     my_img = {'image': open('./Test/rubiks-side-L.jpg', 'rb')}
     r = requests.post(url, files=my_img,data=payload)
     #White
-    payload = {'color': "white",'side':"U"}
+    payload = {'color': "White",'side':"U"}
     my_img = {'image': open('./Test/rubiks-side-U.jpg', 'rb')}
     r = requests.post(url, files=my_img,data=payload)
     #Red
-    payload = {'color': "red",'side':"D"}
+    payload = {'color': "Red",'side':"D"}
     my_img = {'image': open('./Test/rubiks-side-D.jpg', 'rb')}
     r = requests.post(url, files=my_img,data=payload)
 
@@ -80,7 +80,21 @@ def reset():
     print(result.json())
 
 
+def cal():
+    url = 'http://127.0.0.1:8000/calibratePallete'
+    payload = {'red': (0, 0, 255),
+    'orange': (0, 165, 255),
+    'blue'  : (255, 0, 0),
+    'green' : (0, 255, 0),
+    'white' : (255, 255, 255),
+    'yellow': (0, 255, 255)}
+    r = requests.post(url,data=payload)
+    print(r.json())
+
+# cal()
 calibrate()
 cubenotation()
 result()
 reset()
+
+#FDBLUDBULFBRLRURDBLFDDFFUBBFRURDLFBLUUDULFDFLDRRRBBULR

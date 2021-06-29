@@ -145,6 +145,8 @@ def get_closest_color(rgb,cp):
                'color_rgb': color_rgb,
                'distance': ciede2000(lab, rgb2lab(color_rgb))
           })
+     #print(distances)
      closest = min(distances, key=lambda item: item['distance'])
+     #print(closest)
      return closest
 
