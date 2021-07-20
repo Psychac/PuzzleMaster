@@ -14,6 +14,7 @@ class MyApp extends StatelessWidget {
     return ScopedModel(
         model: DataState(),
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           title: 'Flutter Demo',
           home: MagicCube(),
         ));

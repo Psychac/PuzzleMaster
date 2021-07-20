@@ -21,41 +21,32 @@ import 'package:dio/dio.dart';
 import 'package:puzzle_master/screens/scan.dart';
 import 'dart:convert';
 
-class ColorPickerWidget extends StatefulWidget {
+class CalibrateModule extends StatefulWidget {
   @override
-  _ColorPickerWidgetState createState() => _ColorPickerWidgetState();
+  _CalibrateModuleState createState() => _CalibrateModuleState();
 }
 
-class _ColorPickerWidgetState extends State<ColorPickerWidget> {
-  var serverUrl = "http://192.168.43.133:8000/calibratePallete";
+class _CalibrateModuleState extends State<CalibrateModule> {
+  Map colorToColorCodeMapping = {
+    "Green": null,
+    "Red": null,
+    "Blue": null,
+    "Orange": null,
+    "White": null,
+    "Yellow": null,
+  };
+  Map colorToRGBMapping = {
+    "Green": null,
+    "Red": null,
+    "Blue": null,
+    "Orange": null,
+    "White": null,
+    "Yellow": null,
+  };
 
-  Map colorPalette = {
-    "Green": null,
-    "Red": null,
-    "Blue": null,
-    "Orange": null,
-    "White": null,
-    "Yellow": null,
-  };
-  Map newPalette = {
-    "Green": null,
-    "Red": null,
-    "Blue": null,
-    "Orange": null,
-    "White": null,
-    "Yellow": null,
-  };
-  Map sideNotation = {
-    "F": null,
-    "R": null,
-    "B": null,
-    "L": null,
-    "U": null,
-    "D": null,
-  };
   Color savedColor;
-  String _value = "Green";
-  String _valueSide = "F";
+  String selectedColorName = "Green";
+  String selectedSideName = "F";
   String currentColor;
   String currentSide;
   String imagePath;
@@ -83,253 +74,312 @@ class _ColorPickerWidgetState extends State<ColorPickerWidget> {
     final String title = useSnapshot ? "snapshot" : "basic";
     return Scaffold(
       appBar: AppBar(
-        title: Text("Color picker $title"),
+        elevation: 0.0,
+        leading: IconButton(
+          color: Colors.black87,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
+        foregroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
+        title: Center(
+          child: Text(
+            "CALIBRATE COLORS",
+            style: TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+              fontSize: 22.0,
+            ),
+          ),
+        ),
         actions: [
-          TextButton(
-            onPressed: () async {
-              String serverUrl = "http://192.168.43.133:8000/calibratePallete";
-              var dio = Dio();
-              dio.options.connectTimeout = 5000; //5s
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: OutlinedButton(
+              onPressed: () async {
+                String serverUrl =
+                    "https://puzzlemaster.herokuapp.com/calibratePallete";
+                //String serverUrl = "http://192.168.43.133:5000/calibratePallete";
+                var dio = Dio();
+                dio.options.connectTimeout = 5000; //5s
 
-              const JsonCodec json = JsonCodec();
-              var jsonFile = json.encode({
-                "Green": newPalette["Green"],
-                "Red": newPalette["Red"],
-                "Blue": newPalette["Blue"],
-                "Orange": newPalette["Orange"],
-                "White": newPalette["White"],
-                "Yellow": newPalette["Yellow"],
-              });
-              var sideName = json.encode({
-                "F": sideNotation["F"],
-                "R": sideNotation["R"],
-                "B": sideNotation["B"],
-                "L": sideNotation["L"],
-                "U": sideNotation["U"],
-                "D": sideNotation["D"],
-              });
-              print(sideName);
-              FormData formData = FormData.fromMap({
-                "colors" : jsonFile,
-                "side" : sideName,
-              });
+                const JsonCodec json = JsonCodec();
+                var colorsToRGBJson = json.encode({
+                  "Green": colorToRGBMapping["Green"],
+                  "Red": colorToRGBMapping["Red"],
+                  "Blue": colorToRGBMapping["Blue"],
+                  "Orange": colorToRGBMapping["Orange"],
+                  "White": colorToRGBMapping["White"],
+                  "Yellow": colorToRGBMapping["Yellow"],
+                });
 
+                FormData formData = FormData.fromMap({
+                  "colors": colorsToRGBJson,
+                });
 
-              try {
-                var response = await dio.post(serverUrl, data: formData);
-                // print(response.statusCode);
-                 print(response.data);
+                try {
+                  var response = await dio.post(serverUrl, data: formData);
+                  // print(response.statusCode);
+                  print(response.data);
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: (response.data['status'] == true)
-                        ? Text(response.data['msg'])
-                        : Text(response.data['msg']),
-                    action: SnackBarAction(
-                      label: (response.data['status'] == true)
-                          ? 'Done'
-                          : 'Try again',
-                      onPressed: () {
-                        if (response.data['status'] == true) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return HomePage();
-                              },
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: (response.data['status'] == true)
+                          ? Text(
+                              response.data['msg'],
+                            )
+                          : Text(
+                              response.data['msg'],
                             ),
-                          );
-                        }
-                      },
+                      action: SnackBarAction(
+                        label: (response.data['status'] == true)
+                            ? 'Done'
+                            : 'Try again',
+                        onPressed: () {
+                          if (response.data['status'] == true) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return ScanModule();
+                                },
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Server error"),
-                    action: SnackBarAction(
-                      label: "Try again",
-                      onPressed: () {},
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        "Server error",
+                      ),
+                      action: SnackBarAction(
+                        label: "Try again",
+                        onPressed: () {},
+                      ),
                     ),
+                  );
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Done",
+                  style: TextStyle(
+                    fontSize: 17.0,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
                   ),
-                );
-              }
-            },
-            child: Text(
-              "Done",
-              style: TextStyle(
-                color: Colors.white,
+                ),
               ),
             ),
           ),
         ],
       ),
       body: StreamBuilder(
-          initialData: Colors.green[500],
+          initialData: Colors.transparent,
           stream: _stateController.stream,
           builder: (buildContext, snapshot) {
-            Color selectedColor = snapshot.data ?? Colors.green;
+            Color selectedColor = snapshot.data ?? Colors.white70;
             return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Expanded(
                   flex: 5,
-                  child: RepaintBoundary(
-                    key: paintKey,
-                    child: GestureDetector(
-                      onPanDown: (details) {
-                        searchPixel(details.globalPosition);
-                      },
-                      onPanUpdate: (details) {
-                        searchPixel(details.globalPosition);
-                      },
-                      child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: RepaintBoundary(
+                      key: paintKey,
+                      child: GestureDetector(
+                        onPanDown: (details) {
+                          searchPixel(details.globalPosition);
+                        },
+                        onPanUpdate: (details) {
+                          searchPixel(details.globalPosition);
+                        },
                         child: (imagePath == null)
-                            ? Center(
-                                child: Text("Image will go here"),
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.add_a_photo,
+                                    size: 50.0,
+                                    color: Colors.black54,
+                                  ),
+                                  SizedBox(
+                                    height: 10.0,
+                                  ),
+                                  Text(
+                                    "Image will go here",
+                                    style: TextStyle(
+                                      fontSize: 15.0,
+                                    ),
+                                  ),
+                                ],
                               )
                             : Image(
                                 image: FileImage(File(imagePath)),
                                 key: imageKey,
-                                fit: BoxFit.contain,
+                                fit: BoxFit.cover,
                               ),
-                        // child: Image.asset(
-                        //   imagePath,
-                        //   key: imageKey,
-                        //   fit: BoxFit.contain,
-                        // ),
                       ),
                     ),
                   ),
                 ),
                 Expanded(
                   child: Container(
+                    padding: EdgeInsets.all(10.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
+                        Text(
+                          "Choose color:",
+                          style: TextStyle(
+                            fontSize: 17.0,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         DropdownButton(
-                            value: _value,
+                            value: selectedColorName,
                             icon: Icon(Icons.arrow_drop_down),
                             items: [
                               DropdownMenuItem(
-                                  child: Text("Green"), value: "Green"),
+                                  child: Text(
+                                    "Green",
+                                    style: TextStyle(fontSize: 17.0),
+                                  ),
+                                  value: "Green"),
                               DropdownMenuItem(
-                                  child: Text("Red"), value: "Red"),
+                                  child: Text(
+                                    "Red",
+                                    style: TextStyle(fontSize: 17.0),
+                                  ),
+                                  value: "Red"),
                               DropdownMenuItem(
-                                  child: Text("Blue"), value: "Blue"),
+                                  child: Text(
+                                    "Blue",
+                                    style: TextStyle(fontSize: 17.0),
+                                  ),
+                                  value: "Blue"),
                               DropdownMenuItem(
-                                  child: Text("Orange"), value: "Orange"),
+                                  child: Text(
+                                    "Orange",
+                                    style: TextStyle(fontSize: 17.0),
+                                  ),
+                                  value: "Orange"),
                               DropdownMenuItem(
-                                  child: Text("White"), value: "White"),
+                                  child: Text(
+                                    "White",
+                                    style: TextStyle(fontSize: 17.0),
+                                  ),
+                                  value: "White"),
                               DropdownMenuItem(
-                                  child: Text("Yellow"), value: "Yellow"),
+                                  child: Text(
+                                    "Yellow",
+                                    style: TextStyle(fontSize: 17.0),
+                                  ),
+                                  value: "Yellow"),
                             ],
                             onChanged: (value) {
-                              //print(value);
-                              //print(colorPalette);
                               setState(() {
-                                _value = value;
-                                currentColor = _value;
-                              });
-                            }),
-                        DropdownButton(
-                            value: _valueSide,
-                            icon: Icon(Icons.arrow_drop_down),
-                            items: [
-                              DropdownMenuItem(
-                                  child: Text("Front"), value: "F"),
-                              DropdownMenuItem(
-                                  child: Text("Right"), value: "R"),
-                              DropdownMenuItem(
-                                  child: Text("Back"), value: "B"),
-                              DropdownMenuItem(
-                                  child: Text("Left"), value: "L"),
-                              DropdownMenuItem(
-                                  child: Text("Up"), value: "U"),
-                              DropdownMenuItem(
-                                  child: Text("Down"), value: "D"),
-                            ],
-                            onChanged: (value) {
-                              //print(value);
-                              //print(colorPalette);
-                              setState(() {
-                                _valueSide = value;
-                                currentSide = _valueSide;
+                                selectedColorName = value;
+                                currentColor = selectedColorName;
                               });
                             }),
                         Container(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Container(
-                                height: 50.0,
-                                width: 50.0,
-                                color: colorPalette[currentColor] == null
-                                    ? Colors.black26
-                                    : Color(colorPalette[currentColor]),
-                              ),
-                              SizedBox(
-                                width: 20.0,
-                              ),
-                              Text(colorPalette[currentColor] == null
-                                  ? "Color not calibrated"
-                                  : "Color calibrated"),
-                              Icon(colorPalette[currentColor] == null
-                                  ? Icons.warning
-                                  : Icons.check),
-                            ],
+                          decoration: BoxDecoration(
+                            color: colorToColorCodeMapping[currentColor] == null
+                                ? Colors.black26
+                                : Color(colorToColorCodeMapping[currentColor]),
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                          height: 50.0,
+                          width: 50.0,
+                        ),
+                        // SizedBox(
+                        //   width: 20.0,
+                        // ),
+                        Text(
+                          colorToColorCodeMapping[currentColor] == null
+                              ? "Color not calibrated"
+                              : "Color calibrated",
+                          style: TextStyle(
+                            fontSize: 17.0,
                           ),
                         ),
+                        Icon(colorToColorCodeMapping[currentColor] == null
+                            ? Icons.warning
+                            : Icons.check),
                       ],
                     ),
                   ),
                 ),
                 Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        savedColor = selectedColor;
-                        colorPalette[currentColor] = savedColor.value;
-                        int blue = savedColor.blue;
-                        int red = savedColor.red;
-                        int green = savedColor.green;
-                        newPalette[currentColor] = [red,green,blue];
-                        sideNotation[currentSide] = currentColor;
-                        print(newPalette);
-                        print(sideNotation);
-
-                      });
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: selectedColor,
-                      ),
-                      child: Center(
-                        child: Text('Save Color',
-                            style: TextStyle(
-                                color: Colors.white,
-                                backgroundColor: Colors.black54)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          savedColor = selectedColor;
+                          colorToColorCodeMapping[currentColor] =
+                              savedColor.value;
+                          int blue = savedColor.blue;
+                          int red = savedColor.red;
+                          int green = savedColor.green;
+                          colorToRGBMapping[currentColor] = [red, green, blue];
+                          print(colorToRGBMapping);
+                        });
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: selectedColor,
+                          borderRadius:
+                              const BorderRadius.all(const Radius.circular(8)),
+                        ),
+                        child: Center(
+                          child: Text('Save Color',
+                              style: TextStyle(
+                                  fontSize: 17.0,
+                                  color: Colors.white,
+                                  backgroundColor: Colors.black54)),
+                        ),
                       ),
                     ),
                   ),
                 ),
                 Expanded(
-                  child: TextButton(
-                    onPressed: () async {
-                      ImagePicker _picker = ImagePicker();
-                      final pickedFile =
-                          await _picker.getImage(source: ImageSource.camera);
-                      setState(() {
-                        imagePath = pickedFile.path;
-                        //imagePath = "assets/8991.jpg";
-                        photo = null;
-                      });
-                    },
-                    child: Container(
-                      width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 20.0,
+                      top: 8.0,
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    child: OutlinedButton(
+                      onPressed: () async {
+                        ImagePicker _picker = ImagePicker();
+                        final pickedFile =
+                            await _picker.getImage(source: ImageSource.camera);
+                        setState(() {
+                          imagePath = pickedFile.path;
+                          //imagePath = "assets/8991.jpg";
+                          photo = null;
+                        });
+                      },
                       child: Center(
-                        child: Text("Change photo"),
+                        child: Text(
+                          "Change photo",
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 17.0,
+                          ),
+                        ),
                       ),
                     ),
                   ),
